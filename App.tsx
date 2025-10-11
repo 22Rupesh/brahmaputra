@@ -71,9 +71,9 @@ const App: React.FC = () => {
     
     setAllUsers((users as UserProfile[]) || []);
     setAllProjects((projects as Project[]) || []);
-    setAllReports((reports as Report[]) || []);
-    setAllAppeals((appeals as Appeal[]) || []);
-    setAllSepeals((sepeals as Sepeal[]) || []);
+    setAllReports((reports as any[])?.map(r => ({...r, generatedById: r.generated_by_id})) || []);
+    setAllAppeals((appeals as any[])?.map(a => ({...a, recipientId: a.recipient_id})) || []);
+    setAllSepeals((sepeals as any[])?.map(s => ({...s, assignedToId: s.assigned_to_id, createdAt: s.created_at})) || []);
     setAllKpiPolicies((kpiPolicies as KpiPolicy[]) || []);
     setAppraisalContent(appraisal as AppraisalContent || null);
     setAllDprTasks((dprTasks as any[])?.map(t => ({...t, userId: t.user_id, taskDate: t.task_date, projectId: t.project_id, evidenceUrl: t.evidence_url, mentorNotes: t.mentor_notes})) || []);
@@ -146,7 +146,7 @@ const App: React.FC = () => {
     if (!currentUser) return;
     const newAppeals = recipientIds.map(id => ({
         subject,
-        recipientId: id,
+        recipient_id: id,
         date: new Date().toISOString(),
         status: 'Pending Review' as Appeal['status'],
         assigned: currentUser.name,
@@ -177,7 +177,8 @@ const App: React.FC = () => {
   }
 
   const handleCreateSepeal = async (sepeal: Omit<Sepeal, 'id' | 'createdAt'>) => {
-    const { error } = await supabase.from('sepeals').insert([{ ...sepeal, created_at: new Date().toISOString(), assigned_to_id: sepeal.assignedToId }]);
+    const { assignedToId, ...rest } = sepeal;
+    const { error } = await supabase.from('sepeals').insert([{ ...rest, created_at: new Date().toISOString(), assigned_to_id: assignedToId }]);
      if (error) alert('Error creating SEPEAL: ' + error.message);
     else {
         alert('SEPEAL created successfully.');
@@ -186,7 +187,8 @@ const App: React.FC = () => {
   }
 
    const handleUpdateSepeal = async (sepeal: Sepeal) => {
-    const { error } = await supabase.from('sepeals').update({ ...sepeal, assigned_to_id: sepeal.assignedToId }).eq('id', sepeal.id);
+    const { assignedToId, createdAt, ...rest } = sepeal; // createdAt is managed by DB
+    const { error } = await supabase.from('sepeals').update({ ...rest, assigned_to_id: assignedToId }).eq('id', sepeal.id);
      if (error) alert('Error updating SEPEAL: ' + error.message);
     else {
         alert('SEPEAL updated successfully.');

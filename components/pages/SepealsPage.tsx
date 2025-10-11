@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import { UserProfile, Sepeal } from '../../types';
 import Modal from '../Modal';
 
@@ -28,6 +28,64 @@ const getPriorityColor = (priority: Sepeal['priority']) => {
         case 'Low': return 'bg-green-200 text-green-800';
         default: return 'bg-gray-200 text-gray-800';
     }
+};
+
+interface EditModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  sepeal: Partial<Sepeal> | null;
+  allUsers: UserProfile[];
+  onSave: () => void;
+  onFieldChange: (field: keyof Sepeal, value: any) => void;
+}
+
+const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, sepeal, allUsers, onSave, onFieldChange }) => {
+  if (!sepeal) return null;
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose} title={sepeal.id ? 'Edit SEPEAL' : 'Create New SEPEAL'}>
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Subject</label>
+          <input type="text" value={sepeal.subject || ''} onChange={e => onFieldChange('subject', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-accent focus:border-brand-accent" />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Description</label>
+          <textarea value={sepeal.description || ''} onChange={e => onFieldChange('description', e.target.value)} rows={4} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-accent focus:border-brand-accent" />
+        </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Priority</label>
+            <select value={sepeal.priority} onChange={e => onFieldChange('priority', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-accent focus:border-brand-accent">
+              <option value="Low">Low</option>
+              <option value="Medium">Medium</option>
+              <option value="High">High</option>
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700">Status</label>
+            <select value={sepeal.status} onChange={e => onFieldChange('status', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-accent focus:border-brand-accent">
+              <option value="New">New</option>
+              <option value="Under Review">Under Review</option>
+              <option value="Resolved">Resolved</option>
+              <option value="Closed">Closed</option>
+            </select>
+          </div>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">Assigned To</label>
+          <select value={sepeal.assignedToId || ''} onChange={e => onFieldChange('assignedToId', e.target.value ? parseInt(e.target.value, 10) : null)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-accent focus:border-brand-accent">
+            <option value="">Unassigned</option>
+            {allUsers.map(user => <option key={user.id} value={user.id}>{user.name}</option>)}
+          </select>
+        </div>
+      </div>
+      <div className="mt-6 flex justify-end gap-3">
+        <button onClick={onClose} className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-md transition-colors text-sm">Cancel</button>
+        <button onClick={onSave} className="bg-brand-accent hover:bg-teal-500 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">Save Changes</button>
+      </div>
+    </Modal>
+  );
 };
 
 const SepealsPage: React.FC<SepealsPageProps> = ({ currentUser, allUsers, allSepeals, onCreate, onUpdate, onDelete }) => {
@@ -70,62 +128,13 @@ const SepealsPage: React.FC<SepealsPageProps> = ({ currentUser, allUsers, allSep
       }
   }
 
+  const handleFieldChange = (field: keyof Sepeal, value: any) => {
+    setEditingSepeal(prev => (prev ? { ...prev, [field]: value } : null));
+  };
+
   const getUserNameById = (id: number | null) => {
     if (!id) return <span className="text-gray-400 italic">Unassigned</span>;
     return allUsers.find(u => u.id === id)?.name || 'Unknown User';
-  };
-
-  const EditModal = () => {
-    if (!editingSepeal) return null;
-
-    const handleFieldChange = (field: keyof Sepeal, value: any) => {
-        setEditingSepeal(prev => ({...prev, [field]: value }));
-    };
-
-    return (
-        <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)} title={editingSepeal.id ? 'Edit SEPEAL' : 'Create New SEPEAL'}>
-            <div className="space-y-4">
-                 <div>
-                    <label className="block text-sm font-medium text-gray-700">Subject</label>
-                    <input type="text" value={editingSepeal.subject} onChange={e => handleFieldChange('subject', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-accent focus:border-brand-accent"/>
-                </div>
-                 <div>
-                    <label className="block text-sm font-medium text-gray-700">Description</label>
-                    <textarea value={editingSepeal.description || ''} onChange={e => handleFieldChange('description', e.target.value)} rows={4} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-accent focus:border-brand-accent"/>
-                </div>
-                 <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Priority</label>
-                        <select value={editingSepeal.priority} onChange={e => handleFieldChange('priority', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-accent focus:border-brand-accent">
-                            <option value="Low">Low</option>
-                            <option value="Medium">Medium</option>
-                            <option value="High">High</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700">Status</label>
-                        <select value={editingSepeal.status} onChange={e => handleFieldChange('status', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-accent focus:border-brand-accent">
-                            <option value="New">New</option>
-                            <option value="Under Review">Under Review</option>
-                            <option value="Resolved">Resolved</option>
-                            <option value="Closed">Closed</option>
-                        </select>
-                    </div>
-                </div>
-                <div>
-                    <label className="block text-sm font-medium text-gray-700">Assigned To</label>
-                    <select value={editingSepeal.assignedToId || ''} onChange={e => handleFieldChange('assignedToId', e.target.value ? parseInt(e.target.value, 10) : null)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-accent focus:border-brand-accent">
-                        <option value="">Unassigned</option>
-                        {allUsers.map(user => <option key={user.id} value={user.id}>{user.name}</option>)}
-                    </select>
-                </div>
-            </div>
-            <div className="mt-6 flex justify-end gap-3">
-                <button onClick={() => setModalOpen(false)} className="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-md transition-colors text-sm">Cancel</button>
-                <button onClick={handleSave} className="bg-brand-accent hover:bg-teal-500 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">Save Changes</button>
-            </div>
-        </Modal>
-    );
   };
 
   return (
@@ -180,7 +189,15 @@ const SepealsPage: React.FC<SepealsPageProps> = ({ currentUser, allUsers, allSep
           {visibleSepeals.length === 0 && <p className="text-center text-gray-500 py-8">No SEPEALS found.</p>}
         </div>
       </div>
-      {isModalOpen && <EditModal />}
+      
+      <EditModal
+        isOpen={isModalOpen}
+        onClose={() => setModalOpen(false)}
+        sepeal={editingSepeal}
+        allUsers={allUsers}
+        onSave={handleSave}
+        onFieldChange={handleFieldChange}
+      />
     </div>
   );
 };
