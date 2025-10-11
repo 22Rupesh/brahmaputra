@@ -1,0 +1,7 @@
+{
+  "name": "Brahmaputra Productivity",
+  "description": "An e-Office integrated, data-driven performance measurement module for government offices with role-based dashboards, real-time KPI tracking, and a weighted 100-point scoring model.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
