@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useRef } from 'react';
 import { UserProfile, DprTask, Project } from '../../types';
 import Modal from '../Modal';
@@ -105,27 +106,29 @@ const DprPage: React.FC<DprPageProps> = ({ viewedUser, allUsers, allProjects, al
   }, []);
 
   const CalendarStrip = () => (
-    <div className="flex space-x-2 bg-white p-3 rounded-lg shadow-sm border items-center">
-        {recentDates.map(date => {
-            const dateString = date.toLocaleDateString('en-CA');
-            const isActive = dateString === selectedDate;
-            return (
-                <button
-                    key={dateString}
-                    onClick={() => setSelectedDate(dateString)}
-                    className={`flex-1 text-center p-2 rounded-md transition-colors ${isActive ? 'bg-brand-accent text-white shadow' : 'bg-gray-100 hover:bg-gray-200'}`}
-                >
-                    <p className="text-xs">{date.toLocaleDateString('en-US', { weekday: 'short' })}</p>
-                    <p className="font-bold text-lg">{date.getDate()}</p>
-                </button>
-            )
-        })}
-        <input 
-            type="date"
-            value={selectedDate}
-            onChange={e => setSelectedDate(e.target.value)}
-            className="ml-2 bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-accent focus:border-brand-accent text-sm"
-        />
+    <div className="bg-white p-3 rounded-lg shadow-sm border overflow-hidden">
+        <div className="flex space-x-2 items-center overflow-x-auto pb-2">
+            {recentDates.map(date => {
+                const dateString = date.toLocaleDateString('en-CA');
+                const isActive = dateString === selectedDate;
+                return (
+                    <button
+                        key={dateString}
+                        onClick={() => setSelectedDate(dateString)}
+                        className={`flex-shrink-0 text-center p-2 rounded-md transition-colors w-20 ${isActive ? 'bg-brand-accent text-white shadow' : 'bg-gray-100 hover:bg-gray-200'}`}
+                    >
+                        <p className="text-xs">{date.toLocaleDateString('en-US', { weekday: 'short' })}</p>
+                        <p className="font-bold text-lg">{date.getDate()}</p>
+                    </button>
+                )
+            })}
+            <input 
+                type="date"
+                value={selectedDate}
+                onChange={e => setSelectedDate(e.target.value)}
+                className="ml-2 bg-white border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-accent focus:border-brand-accent text-sm"
+            />
+        </div>
     </div>
   );
 

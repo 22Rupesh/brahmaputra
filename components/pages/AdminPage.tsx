@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { UserProfile, Project, ActivityLogEntry } from '../../types';
 import ManageUserModal from './admin/ManageUserModal';
@@ -119,7 +120,7 @@ const AdminPage: React.FC<AdminPageProps> = ({ allUsers, allProjects, refreshUse
             <tbody>
               {allUsers.map(user => (
                 <tr key={user.id} className="bg-white border-b hover:bg-gray-50">
-                  <td className="px-6 py-4 font-medium text-gray-900 flex items-center space-x-3">
+                  <td className="px-6 py-4 font-medium text-gray-900 flex items-center space-x-3 whitespace-nowrap">
                     <img src={DEFAULT_AVATAR_URL} alt={user.name} className="w-8 h-8 rounded-full bg-gray-200 p-0.5" />
                     <span>{user.name}</span>
                   </td>

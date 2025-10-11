@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from './lib/supabaseClient';
 import { UserProfile, Project, Report, Appeal, Sepeal, KpiPolicy, AppraisalContent, DprTask, Broadcast, AttendanceRecord, Alert } from './types';
@@ -40,6 +41,7 @@ const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState('dashboard');
   const [isLoading, setIsLoading] = useState(true);
   const [authView, setAuthView] = useState<'login' | 'signup'>('login');
+  const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -506,8 +508,8 @@ const App: React.FC = () => {
   }
 
   return (
-    <div className="h-screen w-screen flex bg-brand-bg font-sans">
-      <Sidebar user={currentUser} currentPage={currentPage} onNavigate={setCurrentPage} />
+    <div className="h-screen w-screen flex bg-brand-bg font-sans overflow-hidden">
+      <Sidebar user={currentUser} currentPage={currentPage} onNavigate={setCurrentPage} isSidebarOpen={isSidebarOpen} toggleSidebar={() => setSidebarOpen(false)} />
       <main className="flex-1 flex flex-col overflow-hidden">
         <Header 
             currentUser={currentUser} 
@@ -515,8 +517,9 @@ const App: React.FC = () => {
             setViewedUser={setViewedUser}
             allUsers={allUsers}
             onLogout={handleLogout}
+            onToggleSidebar={() => setSidebarOpen(!isSidebarOpen)}
         />
-        <div className="flex-1 p-6 overflow-y-auto">
+        <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
           {renderPage()}
         </div>
       </main>

@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { UserProfile, Sepeal } from '../../types';
 import Modal from '../Modal';
@@ -53,7 +54,7 @@ const EditModal: React.FC<EditModalProps> = ({ isOpen, onClose, sepeal, allUsers
           <label className="block text-sm font-medium text-gray-700">Description</label>
           <textarea value={sepeal.description || ''} onChange={e => onFieldChange('description', e.target.value)} rows={4} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-accent focus:border-brand-accent" />
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700">Priority</label>
             <select value={sepeal.priority} onChange={e => onFieldChange('priority', e.target.value)} className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-accent focus:border-brand-accent">
@@ -163,9 +164,9 @@ const SepealsPage: React.FC<SepealsPageProps> = ({ currentUser, allUsers, allSep
             <tbody>
               {visibleSepeals.map((sepeal) => (
                 <tr key={sepeal.id} className="bg-white border-b hover:bg-gray-50">
-                  <td className="px-6 py-4 font-medium text-gray-900">{sepeal.subject}</td>
-                  <td className="px-6 py-4">{getUserNameById(sepeal.assignedToId)}</td>
-                  <td className="px-6 py-4">{new Date(sepeal.createdAt).toLocaleDateString()}</td>
+                  <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{sepeal.subject}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{getUserNameById(sepeal.assignedToId)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{new Date(sepeal.createdAt).toLocaleDateString()}</td>
                   <td className="px-6 py-4">
                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${getPriorityColor(sepeal.priority)}`}>
                         {sepeal.priority}

@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo, useEffect } from 'react';
 // @ts-ignore
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
@@ -231,8 +232,8 @@ const OrganizationDashboard: React.FC<OrganizationDashboardProps> = ({ allUsers,
                 <p className="text-sm text-gray-600 mb-4">Centrally define, modify, and control weightages for role-specific KPIs here. This interface ensures standardized performance measurement across the organization.</p>
                 <div className="space-y-2 max-h-80 overflow-y-auto pr-2">
                     {editedPolicies.map((policy) => (
-                        <div key={policy.id} className="grid grid-cols-12 gap-2 items-center p-2 bg-gray-50 rounded-md">
-                            <div className="col-span-5">
+                        <div key={policy.id} className="grid grid-cols-1 md:grid-cols-12 gap-2 items-center p-2 bg-gray-50 rounded-md">
+                            <div className="col-span-12 md:col-span-5">
                                 <label className="text-xs text-gray-500">KPI Name</label>
                                 <input 
                                     type="text" 
@@ -242,7 +243,7 @@ const OrganizationDashboard: React.FC<OrganizationDashboardProps> = ({ allUsers,
                                     placeholder="Enter KPI Name"
                                 />
                             </div>
-                            <div className="col-span-5">
+                            <div className="col-span-12 md:col-span-5">
                                 <label className="text-xs text-gray-500">Description</label>
                                 <input 
                                     type="text" 
@@ -252,7 +253,7 @@ const OrganizationDashboard: React.FC<OrganizationDashboardProps> = ({ allUsers,
                                     placeholder="Optional description"
                                 />
                             </div>
-                             <div className="col-span-2">
+                             <div className="col-span-12 md:col-span-2">
                                 <label className="text-xs text-gray-500">Weight</label>
                                 <div className="flex items-center">
                                     <input 

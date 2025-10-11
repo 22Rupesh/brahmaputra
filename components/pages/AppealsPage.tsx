@@ -1,3 +1,4 @@
+
 import React, { useState, useMemo } from 'react';
 import { UserProfile, Appeal } from '../../types';
 import Modal from '../Modal';
@@ -81,9 +82,9 @@ const AppealsPage: React.FC<AppealsPageProps> = ({ viewedUser, allUsers, allAppe
                         <tbody>
                             {visibleAppeals.map((appeal) => (
                                 <tr key={appeal.id} className="bg-white border-b hover:bg-gray-50">
-                                    <td className="px-6 py-4 font-medium text-gray-900">{appeal.subject}</td>
-                                    {isAdmin && <td className="px-6 py-4">{getUserNameById(appeal.recipientId)}</td>}
-                                    <td className="px-6 py-4">{new Date(appeal.date).toLocaleDateString()}</td>
+                                    <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">{appeal.subject}</td>
+                                    {isAdmin && <td className="px-6 py-4 whitespace-nowrap">{getUserNameById(appeal.recipientId)}</td>}
+                                    <td className="px-6 py-4 whitespace-nowrap">{new Date(appeal.date).toLocaleDateString()}</td>
                                     <td className="px-6 py-4">
                                         {isAdmin ? (
                                             <select
@@ -101,9 +102,9 @@ const AppealsPage: React.FC<AppealsPageProps> = ({ viewedUser, allUsers, allAppe
                                             </span>
                                         )}
                                     </td>
-                                    <td className="px-6 py-4">{appeal.assigned}</td>
+                                    <td className="px-6 py-4 whitespace-nowrap">{appeal.assigned}</td>
                                     {isAdmin && (
-                                        <td className="px-6 py-4">
+                                        <td className="px-6 py-4 whitespace-nowrap">
                                             <button onClick={() => onDeleteAppeal(appeal.id)} className="font-medium text-red-600 hover:underline">Delete</button>
                                         </td>
                                     )}

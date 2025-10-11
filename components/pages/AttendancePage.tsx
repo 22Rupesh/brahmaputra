@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { UserProfile, AttendanceRecord } from '../../types';
 
@@ -34,13 +35,13 @@ const AttendancePage: React.FC<AttendancePageProps> = ({ allAttendance, allUsers
                   <td className="px-6 py-4 font-medium text-gray-900 whitespace-nowrap">
                     {getUserNameById(record.userId)}
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 whitespace-nowrap">
                     {new Date(record.createdAt).toLocaleDateString('en-CA')}
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 whitespace-nowrap">
                     {new Date(record.createdAt).toLocaleTimeString()}
                   </td>
-                  <td className="px-6 py-4">
+                  <td className="px-6 py-4 whitespace-nowrap">
                     <a
                       href={`https://www.google.com/maps?q=${record.latitude},${record.longitude}`}
                       target="_blank"
