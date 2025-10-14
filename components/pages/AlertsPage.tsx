@@ -6,7 +6,7 @@ interface AlertsPageProps {
   currentUser: UserProfile;
   allUsers: UserProfile[];
   allAlerts: Alert[];
-  onCreateAlert: (alertData: Omit<Alert, 'id' | 'createdAt'>) => Promise<void>;
+  onCreateAlert: (alertData: Omit<Alert, 'id' | 'createdAt'>, sendEmail: boolean) => Promise<void>;
   onDeleteAlert: (alertId: number) => Promise<void>;
 }
 
@@ -35,11 +35,13 @@ const AlertsPage: React.FC<AlertsPageProps> = ({ currentUser, allUsers, allAlert
         message: '',
         suggestion: '',
     });
+    const [sendEmail, setSendEmail] = useState(true);
 
     const isAdmin = currentUser.title.includes('(Admin)');
 
     const openCreateModal = () => {
         setNewAlert({ userId: allUsers.find(u => !u.title.includes('(Admin)'))?.id || 0, type: 'info', title: '', message: '', suggestion: '' });
+        setSendEmail(true);
         setModalOpen(true);
     };
 
@@ -53,7 +55,7 @@ const AlertsPage: React.FC<AlertsPageProps> = ({ currentUser, allUsers, allAlert
             alert('Please select a user and fill in the title and message.');
             return;
         }
-        await onCreateAlert(newAlert);
+        await onCreateAlert(newAlert, sendEmail);
         setModalOpen(false);
     };
 
@@ -90,7 +92,7 @@ const AlertsPage: React.FC<AlertsPageProps> = ({ currentUser, allUsers, allAlert
                                 className="absolute top-2 right-2 text-gray-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
                                 title="Delete Alert"
                             >
-                                <svg xmlns="http://www.w.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                             </button>
                             <div className="flex items-start space-x-3">
                                 <Icon path={styles.icon} className={styles.text} />
@@ -164,6 +166,22 @@ const AlertsPage: React.FC<AlertsPageProps> = ({ currentUser, allUsers, allAlert
                             onChange={e => handleFieldChange('suggestion', e.target.value)}
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-brand-accent focus:border-brand-accent"
                         ></textarea>
+                    </div>
+                     <div className="flex items-start">
+                        <div className="flex items-center h-5">
+                            <input
+                                id="sendEmail"
+                                name="sendEmail"
+                                type="checkbox"
+                                checked={sendEmail}
+                                onChange={e => setSendEmail(e.target.checked)}
+                                className="focus:ring-brand-accent h-4 w-4 text-brand-accent border-gray-300 rounded"
+                            />
+                        </div>
+                        <div className="ml-3 text-sm">
+                            <label htmlFor="sendEmail" className="font-medium text-gray-700">Send email notification</label>
+                            <p className="text-gray-500">Also send a copy of this alert to the user's email address.</p>
+                        </div>
                     </div>
                     <div className="text-right mt-6">
                         <button type="submit" className="bg-brand-accent hover:bg-teal-500 text-white font-bold py-2 px-4 rounded-md transition-colors text-sm">

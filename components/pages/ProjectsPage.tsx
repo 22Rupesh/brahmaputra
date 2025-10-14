@@ -68,8 +68,7 @@ const ProjectsPage: React.FC<ProjectsPageProps> = ({ viewedUser, allProjects, al
         name: target.projectName.value,
         status: 'On Time',
         progress: 0,
-        // FIX: Changed budget_utilization to budgetUtilization to match type definition
-        budgetUtilization: 0,
+        budget_utilization: 0,
         milestones: [],
         team: newProjectTeam,
     };

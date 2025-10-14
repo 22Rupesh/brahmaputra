@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { supabase } from './lib/supabaseClient';
-import { UserProfile, Project, Report, Appeal, Sepeal, KpiPolicy, AppraisalContent, DprTask, Broadcast, AttendanceRecord, Alert } from './types';
+import { UserProfile, Project, Report, Appeal, Sepeal, KpiPolicy, AppraisalContent, DprTask, Broadcast, AttendanceRecord, Alert, ActivityLogEntry } from './types';
 
 import LoginPage from './components/LoginPage';
 import SignupPage from './components/SignupPage';
@@ -278,7 +277,15 @@ const App: React.FC = () => {
             evidenceUrl = urlData.publicUrl;
         }
 
-        const { error } = await supabase.from('dpr_tasks').insert([{...task, user_id: task.userId, task_date: task.taskDate, project_id: task.projectId, status: 'Pending', evidence_url: evidenceUrl}]);
+        const { userId, taskDate, projectId, description } = task;
+        const { error } = await supabase.from('dpr_tasks').insert([{
+            description: description,
+            user_id: userId,
+            task_date: taskDate,
+            project_id: projectId,
+            status: 'Pending',
+            evidence_url: evidenceUrl
+        }]);
         if (error) alert('Error adding task: ' + error.message);
         else {
             alert('Task added successfully.');
@@ -293,7 +300,8 @@ const App: React.FC = () => {
     };
     
     const handleCreateBroadcast = async (broadcast: Omit<Broadcast, 'id' | 'createdAt'>) => {
-      const { error } = await supabase.from('broadcasts').insert([{ ...broadcast, created_at: new Date().toISOString(), target_audience: broadcast.targetAudience }]);
+      const { targetAudience, ...rest } = broadcast;
+      const { error } = await supabase.from('broadcasts').insert([{ ...rest, target_audience: targetAudience, created_at: new Date().toISOString() }]);
       if (error) alert('Error sending broadcast: ' + error.message);
       else {
         alert('Broadcast sent!');
@@ -314,20 +322,67 @@ const App: React.FC = () => {
     
     const handleMarkAttendance = async (coords: { latitude: number, longitude: number }) => {
         if (!currentUser) return;
-        const { error } = await supabase.from('attendance').insert([{ 
-            user_id: currentUser.id, 
+
+        // 1. Insert attendance record into the database
+        const { error: attendanceError } = await supabase.from('attendance').insert([{
+            user_id: currentUser.id,
             latitude: coords.latitude,
             longitude: coords.longitude
         }]);
-        if (error) {
-            alert("Error marking attendance: " + error.message);
-        } else {
-            alert("Attendance marked successfully!");
+
+        if (attendanceError) {
+            alert("Error marking attendance: " + attendanceError.message);
+            return;
+        }
+        
+        // Prepare new data for both optimistic update and database update
+        const today = new Date().toISOString().split('T')[0];
+        const newScore = Math.min(100, currentUser.score + 1);
+
+        const calculateNewLog = (currentLog: ActivityLogEntry[] | undefined): ActivityLogEntry[] => {
+            const log = currentLog || [];
+            const todayEntryIndex = log.findIndex(e => e.date === today);
+            if (todayEntryIndex > -1) {
+                const newLog = [...log];
+                newLog[todayEntryIndex] = { ...newLog[todayEntryIndex], count: newLog[todayEntryIndex].count + 1 };
+                return newLog;
+            } else {
+                return [...log, { date: today, count: 1 }];
+            }
+        };
+        
+        const newLogForDb = calculateNewLog(currentUser.activityLog);
+
+        // 2. Optimistically update the UI immediately
+        setAllUsers(currentUsers =>
+            currentUsers.map(user =>
+                user.id === currentUser.id
+                    ? { ...user, score: newScore, activityLog: calculateNewLog(user.activityLog) }
+                    : user
+            )
+        );
+        setCurrentUser(prevUser => prevUser ? { ...prevUser, score: newScore, activityLog: newLogForDb } : null);
+
+        // 3. Update the user's profile in the database in the background
+        const { error: profileError } = await supabase
+            .from('profiles')
+            .update({
+                activity_log: newLogForDb,
+                score: newScore
+            })
+            .eq('id', currentUser.id);
+
+        if (profileError) {
+            alert("Attendance marked, but a problem occurred while saving your profile data: " + profileError.message);
+            // If the database update fails, revert the optimistic changes by fetching the source of truth
             await fetchData();
+        } else {
+            alert("Attendance marked successfully! Your score and activity have been updated.");
+            // Data is already updated optimistically, no need to re-fetch and cause a potential UI flicker.
         }
     };
 
-    const handleCreateAlert = async (alertData: Omit<Alert, 'id' | 'createdAt'>) => {
+    const handleCreateAlert = async (alertData: Omit<Alert, 'id' | 'createdAt'>, sendEmail: boolean) => {
         const { userId, ...restOfAlert } = alertData;
         const alertForDb = {
             ...restOfAlert,
@@ -343,33 +398,42 @@ const App: React.FC = () => {
 
         const recipient = allUsers.find(user => user.id === userId);
 
-        if (recipient) {
-            console.log(`
-                ==============================================
-                EMAIL SIMULATION:
-                ----------------------------------------------
-                To: ${recipient.email}
-                From: system@brahmaputra-productivity.com
-                Subject: New Alert: ${alertData.title}
-                
-                Body:
-                Hi ${recipient.name},
+        if (recipient && sendEmail) {
+            // NOTE: Parameters are now matched to your specific EmailJS template.
+            // The template should use: {{name}}, {{time}}, {{message}}
+            // The recipient email is passed as `to_email` for delivery.
+            const EMAILJS_SERVICE_ID = 'service_t87rxkr';
+            const EMAILJS_TEMPLATE_ID = 'template_yvijr5a';
+            const EMAILJS_PUBLIC_KEY = 'haHvL-YDiMBRs6LFC';
 
-                You have a new alert from your administrator.
+            const templateParams = {
+                to_email: recipient.email, // For delivery via EmailJS settings
+                name: 'Brahmaputra Productivity System', // Matches {{name}} in your template
+                time: new Date().toLocaleString(), // Matches {{time}} in your template
+                message: `Hi ${recipient.name},<br><br>You have received a new alert:<br><br><b>Title:</b> ${alertData.title}<br><b>Message:</b> ${alertData.message}<br>${alertData.suggestion ? `<b>Suggestion:</b> ${alertData.suggestion}<br>` : ''}`, // Matches {{message}}
+            };
 
-                Message: ${alertData.message}
-                
-                ${alertData.suggestion ? `Suggestion: ${alertData.suggestion}` : ''}
-                
-                Please log in to the portal to view details.
-                ==============================================
-            `);
-            alert(`Alert sent successfully to ${recipient.name} in the app and an email notification has been sent to ${recipient.email}.`);
+            // @ts-ignore
+            window.emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams, EMAILJS_PUBLIC_KEY)
+                .then((response: any) => {
+                    console.log('EmailJS SUCCESS!', response.status, response.text);
+                    alert(`Alert sent to ${recipient.name} in the app and an email notification has been sent to ${recipient.email}.`);
+                    fetchData(); // Refresh data after success
+                }, (err: any) => {
+                    console.error('EmailJS FAILED...', err);
+                    // Provide a more detailed error message to help the user debug their EmailJS setup.
+                    alert(`Alert was sent in the app, but the email notification FAILED. \n\nEmailJS Error: "${err.text || 'Unknown Error'}" \n\nPlease check your EmailJS dashboard. This usually means the template ID is wrong or the template is missing required variables.`);
+                    fetchData(); // Still refresh data, as the in-app alert was created
+                });
+
         } else {
-            alert("Alert sent successfully!");
+            if (recipient) {
+                alert(`Alert sent successfully to ${recipient.name} in the app.`);
+            } else {
+                alert("Alert sent successfully!");
+            }
+            await fetchData();
         }
-
-        await fetchData();
     };
     
     const handleDeleteAlert = async (alertId: number) => {

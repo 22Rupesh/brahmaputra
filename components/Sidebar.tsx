@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { UserProfile } from '../types';
 import { UserNavItems, StaffNavItems, AdminNavItems, BottomNavItems } from '../constants';
@@ -53,7 +52,7 @@ const Sidebar: React.FC<SidebarProps> = ({ user, currentPage, onNavigate, isSide
           <h1 className="text-2xl font-bold tracking-wider">BRAHMAPUTRA</h1>
           <p className="text-xs text-brand-light">PRODUCTIVITY SUITE</p>
         </div>
-        <nav className="flex-1 space-y-2">
+        <nav className="flex-1 space-y-2 overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {navItems.map(item => (
             <NavLink key={item.name} {...item} />
           ))}
