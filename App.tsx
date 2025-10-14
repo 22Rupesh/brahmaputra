@@ -406,11 +406,14 @@ const App: React.FC = () => {
             const EMAILJS_TEMPLATE_ID = 'template_yvijr5a';
             const EMAILJS_PUBLIC_KEY = 'haHvL-YDiMBRs6LFC';
 
+            const suggestionText = alertData.suggestion ? `Suggestion: ${alertData.suggestion}\n` : '';
+            const emailMessage = `Hi ${recipient.name},\n\nYou have received a new alert:\n\nTitle: ${alertData.title}\nMessage: ${alertData.message}\n${suggestionText}`;
+
             const templateParams = {
-                to_email: recipient.email, // For delivery via EmailJS settings
-                name: 'Brahmaputra Productivity System', // Matches {{name}} in your template
-                time: new Date().toLocaleString(), // Matches {{time}} in your template
-                message: `Hi ${recipient.name},<br><br>You have received a new alert:<br><br><b>Title:</b> ${alertData.title}<br><b>Message:</b> ${alertData.message}<br>${alertData.suggestion ? `<b>Suggestion:</b> ${alertData.suggestion}<br>` : ''}`, // Matches {{message}}
+                to_email: recipient.email,
+                name: 'Brahmaputra Productivity System',
+                time: new Date().toLocaleString(),
+                message: emailMessage,
             };
 
             // @ts-ignore
